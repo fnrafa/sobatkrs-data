@@ -4,17 +4,18 @@ function parseData() {
     const output = document.getElementById('output');
 
     if (fileInput) {
-        // If a file is selected, read the file
         const reader = new FileReader();
         reader.onload = function (event) {
             const data = parse(event.target.result);
             output.textContent = JSON.stringify(data, null, 2);
+            saveDataToDatabase(data);
         };
         reader.readAsText(fileInput);
     } else if (textInput.trim() !== '') {
         // If text is pasted
         const data = parse(textInput);
         output.textContent = JSON.stringify(data, null, 2);
+        saveDataToDatabase(data);
     } else {
         output.textContent = 'Please select a file or paste data into the textarea.';
     }
@@ -68,4 +69,18 @@ function parse(text) {
     });
 
     return entries;
+}
+
+function saveDataToDatabase(data) {
+    data.forEach(course => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'save_data.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                console.log('Data saved successfully');
+            }
+        };
+        xhr.send(JSON.stringify(course));
+    });
 }
